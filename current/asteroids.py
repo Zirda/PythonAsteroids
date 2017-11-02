@@ -9,6 +9,7 @@ from objects import Ship
 from objects import Asteroid
 from objects import Bullet
 from objects import Star
+from objects import Debris
 
 class Asteroids( Game ):
     """
@@ -16,37 +17,37 @@ class Asteroids( Game ):
     """
     def __init__(self, name, width, height):
         super().__init__( name, width, height )
-        # TODO: should create a Ship object here
-        self.ship = Ship() # None
-        # TODO: should create asteroids
-        self.asteroids=[]
-        for i in range(8):                  # Change for different amount of Asteroids
-            self.asteroids.append(Asteroid())
-        self.stars=[]
-        for i in range(250):                # Change for different amount of background Stars
+        self.ship = Ship()  # Creates a ship
+        self.asteroids=[]   # A list of all asteroids
+        for i in range(4):                  # Change for different amount of Asteroids
+            self.asteroids.append(Asteroid(random.randrange(0, 1280, 5),random.randrange(0, 720, 5)))
+        self.stars=[]       # A list of all background stars
+        for i in range(50):                # Change for different amount of background Stars
             self.stars.append(Star())
-        # TODO: should create bullets
-        self.bullets = []
+        self.bullets = []   # A list of all bullets
 
     def handle_input(self):
         super().handle_input()
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[K_LEFT] and self.ship:
-            self.ship.rotate(-0.5)
+            self.ship.rotate(-1)
         if keys_pressed[K_RIGHT] and self.ship:
-            self.ship.rotate(0.5)
+            self.ship.rotate(1)
         if keys_pressed[K_UP] and self.ship:
-            self.ship.accelerate(0.005)
+            self.ship.accelerate(0.05)
         if keys_pressed[K_DOWN] and self.ship:
             self.ship.accelerate(0) #TODO: Set to (0) to stop the ship instantly with down-key AKA EASYMODE.
-            pass
         if keys_pressed[K_SPACE] and self.ship:
-            if len(self.bullets) < 10:
-                self.bullets.append(Bullet(self.ship.position,self.ship.rotation))
-            elif len(self.bullets) >= 10:
+            if len(self.bullets) == 0:
+                self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+            else:
+                if self.bullets[len(self.bullets)-1].ttl > 50:
+                    self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+
+            # Försöker få delay i bullet interval
+            if len(self.bullets) >= 10:
                 del self.bullets[0]
-                self.bullets.append(Bullet(self.ship.position, self.ship.rotation))
-                # TODO: should create a bullet when the user fires
+                self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
 
 
 
@@ -62,9 +63,11 @@ class Asteroids( Game ):
             asteroid.update( self.width, self.height )
         for star in self.stars:
             star.update( self.width, self.height )
-        for bullets in self.bullets:
-            bullets.update( self.width, self.height)
-        # TODO: should probably work out how to remove a bullet when it gets old
+        for bullet in self.bullets:
+            bullet.update( self.width, self.height)
+            if bullet.ttl + 100 < self.frame:
+                self.bullets.pop(self.bullets.index(bullet))
+
         self.handle_collisions()
 
     def render_objects(self):
@@ -95,7 +98,13 @@ class Asteroids( Game ):
                     if asteroid.contains(bullet.position):
                         self.bullets.pop(self.bullets.index(bullet))
                         self.asteroids.pop(self.asteroids.index(asteroid))
-"""
+                        if asteroid.health >= 2:
+                            self.asteroids.append(Debris(asteroid.position))
+                            self.asteroids.append(Debris(asteroid.position))
+                            self.asteroids.append(Debris(asteroid.position))
+                            self.asteroids.append(Debris(asteroid.position))
+                        break
+"""                     
         handle_collisions() should check:
             - if our ship has crashed into an asteroid (the ship gets destroyed - game over!)
             - if a bullet has hit an asteroid (the asteroid gets destroyed)

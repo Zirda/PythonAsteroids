@@ -17,6 +17,9 @@ class Point:
     def __sub__(self, b):
         return Point( self.x - b.x, self.y - b.y )
 
+    def div(self, b):
+        return Point(self.x / b, self.y / b)
+
     def distanceFromOrigin(self):
         return math.sqrt( self.x**2 + self.y**2 )
 
