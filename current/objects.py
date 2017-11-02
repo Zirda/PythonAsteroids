@@ -28,7 +28,7 @@ class Ship (Polygon):
         self.points = [Point(0, 0), Point(0, 5), Point(-10, 10), Point(15, 0), Point(-10, -10), Point(0, -5)]
         self.position = Point(320,180)
         self.rotation = 0
-        self.pull = Point(0,-0.2)
+        self.pull = Point(0,0)
         self.angular_velocity = 0.0
 
         # super().__init__(self)
@@ -62,15 +62,10 @@ class Bullet (Circle):
         self.angular_velocity = 0
         self.radius = 1
         self.linewidth = 1
-        self.accelerate(3)
+        self.accelerate(8)
         self.ttl = born
 
-"""   def update(self):
-        super(Bullet, self).update()
-        self.alive -= 1
-        if self.life == 0:
-            self.kill = True
-"""
+
 class Star (Circle):
     def __init__(self):
         self.position = Point(random.randrange(0, 1280, 5),random.randrange(0, 720, 5))
