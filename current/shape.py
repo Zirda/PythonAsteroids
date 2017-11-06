@@ -15,7 +15,7 @@ class Shape(ABC):
     def draw(self, screen):
         pass
 
-    def update(self, width, height):
+    def update(self, width, height, dt):
         """
         Update the position and orientation of the shape
         :param width: screen width to confine the shape to
@@ -25,8 +25,9 @@ class Shape(ABC):
         # Update the position and orientation of the shape
         #  position is modified by "pull" - how much it should move each frame
         #  rotation is modified by "angular_velocity" - how much it should rotate each frame
-        self.position += self.pull
-        self.rotation += self.angular_velocity
+        self.position.y += self.pull.y * dt
+        self.position.x += self.pull.x * dt
+        self.rotation += self.angular_velocity * dt
         # Use modulus to ensure that the object never vanishes from the screen
         #  Position is wrapped to always be between  (0,0)  and  (width,height)
         #  Rotation is wrapped to always be between 0 and 360 degrees
@@ -45,8 +46,8 @@ class Shape(ABC):
             self.pull.x *=0.9
             self.pull.y *=0.9
         else:
-            self.pull.x += (acceleration * math.cos(math.radians(self.rotation)))
-            self.pull.y += (acceleration * math.sin(math.radians(self.rotation)))
+            self.pull.x += (acceleration * math.cos(math.radians(self.rotation))) * 0.2
+            self.pull.y += (acceleration * math.sin(math.radians(self.rotation))) * 0.2
 
     def rotate(self, degrees):
         """

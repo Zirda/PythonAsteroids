@@ -1,0 +1,202 @@
+diff --git a/current/asteroids.py b/current/asteroids.py
+index d5ae216..bf5e2d4 100644
+--- a/current/asteroids.py
++++ b/current/asteroids.py
+@@ -2,6 +2,7 @@ import sys
+ 
+ import random
+ import pygame
++import time
+ from pygame.locals import *
+ 
+ from game import Game
+@@ -25,33 +26,37 @@ class Asteroids(Game):
+             self.stars.append(Star())
+         self.bullets = []   # A list of all bullets
+         self.score = 0 # Possible score variable
++        self.shot_delay = 0.2
++        self.last_shot = 0
+ 
+     def handle_input(self):
+         super().handle_input()
+-        pygame.key.set_repeat()
++        pygame.key.set_repeat(0, 100)
+         keys_pressed = pygame.key.get_pressed()
+         if keys_pressed[K_LEFT] and self.ship:
+-            self.ship.rotate(-1)
++            self.ship.rotate(-2)
+         if keys_pressed[K_RIGHT] and self.ship:
+-            self.ship.rotate(1)
++            self.ship.rotate(2)
+         if keys_pressed[K_UP] and self.ship:
+             self.ship.accelerate(0.05)
+         if keys_pressed[K_DOWN] and self.ship:
+             self.ship.accelerate(0) #TODO: Set to (0) to stop the ship instantly with down-key AKA EASYMODE.
+         if keys_pressed[K_SPACE] and self.ship:
+-            if len(self.bullets) >= 15:
+-                del self.bullets[0]
+-                self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+-            else:
+-                self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+-    """         if len(self.bullets) == 0:
+-                self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+-            else:
+-                if self.bullets[len(self.bullets)-1].ttl > 50:
++            if time.time() - self.last_shot > self.shot_delay:
++                self.last_shot = time.time()
++                if len(self.bullets) >= 15:
++                    del self.bullets[0]
++                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.frame))
++                else:
++                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.frame))
++        """         if len(self.bullets) == 0:
+                     self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
+-
+-            # Försöker få delay i bullet interval
+-             """
++                else:
++                    if self.bullets[len(self.bullets)-1].ttl > 50:
++                        self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
++    
++                # Försöker få delay i bullet interval
++                 """
+ 
+ 
+ 
+@@ -62,14 +67,14 @@ class Asteroids(Game):
+         super().update_simulation()
+ 
+         if self.ship:
+-            self.ship.update( self.width, self.height )
++            self.ship.update( self.width, self.height, self.dt )
+         for asteroid in self.asteroids:
+-            asteroid.update( self.width, self.height )
++            asteroid.update( self.width, self.height, self.dt )
+         for star in self.stars:
+-            star.update( self.width, self.height )
++            star.update( self.width, self.height, self.dt )
+         for bullet in self.bullets:
+-            bullet.update( self.width, self.height )
+-            if bullet.ttl + 30 < self.frame:
++            bullet.update( self.width, self.height, self.dt )
++            if bullet.ttl + 300 < self.frame:
+                 self.bullets.pop(self.bullets.index(bullet))
+         self.handle_collisions()
+ 
+@@ -103,10 +108,10 @@ class Asteroids(Game):
+                         self.bullets.pop(self.bullets.index(bullet))
+                         self.asteroids.pop(self.asteroids.index(asteroid))
+                         if asteroid.health >= 2:
+-                            self.asteroids.append(Debris(asteroid.position))
+-                            self.asteroids.append(Debris(asteroid.position))
+-                            self.asteroids.append(Debris(asteroid.position))
+-                            self.asteroids.append(Debris(asteroid.position))
++                            self.asteroids.append(Debris(asteroid.position.copy()))
++                            self.asteroids.append(Debris(asteroid.position.copy()))
++                            self.asteroids.append(Debris(asteroid.position.copy()))
++                            self.asteroids.append(Debris(asteroid.position.copy()))
+ 
+     def death_screen(self):
+         game = Asteroids("Asteroids", 640, 480)
+diff --git a/current/game.py b/current/game.py
+index 78b90ca..1a1fe03 100644
+--- a/current/game.py
++++ b/current/game.py
+@@ -16,7 +16,7 @@ class Game( ABC ):
+ 
+         # Running game state
+         self.running = True
+-
++        self.clock = pygame.time.Clock()
+         # Keep track of how many times we have drawn a frame in the game:
+         self.frame = 0
+ 
+@@ -38,6 +38,8 @@ class Game( ABC ):
+                 if event.type == pygame.QUIT:
+                     self.running = False
+ 
++
++            self.dt = self.clock.tick(60)
+             self.handle_input()
+             self.update_simulation()
+             self.paint()
+diff --git a/current/objects.py b/current/objects.py
+index b5bf81a..c89a4a3 100644
+--- a/current/objects.py
++++ b/current/objects.py
+@@ -40,8 +40,8 @@ class Asteroid (Polygon):
+         # Small asteroid: [Point(0,10), Point(10,15), Point(18,9), Point(13,3), Point(17,-5), Point(5,-12), Point(-10,-12), Point(-16,-7), Point(-16,8), Point(-9,14)]
+         self.position = Point(x,y)
+         self.rotation = random.randrange(0, 359, 15)
+-        self.pull = Point(round(random.uniform(-1, 1),1),round(random.uniform(-1, 1),1))
+-        self.angular_velocity = round(random.uniform(-1, 1),1)
++        self.pull = Point(round(random.uniform(-0.1, 0.1),1),round(random.uniform(-0.1, 0.1),1))
++        self.angular_velocity = round(random.uniform(-0.3, 0.3),1)
+         self.health = 2
+ 
+ 
+@@ -50,7 +50,7 @@ class Debris (Asteroid):
+         self.points = getRandomDebris()
+         self.position = position
+         self.rotation = random.randrange(0, 359, 15)
+-        self.pull = Point(round(random.uniform(-1, 1), 1), round(random.uniform(-1, 1), 1))
++        self.pull = Point(round(random.uniform(-0.1, 0.1), 1), round(random.uniform(-0.1, 0.1), 1))
+         self.angular_velocity = round(random.uniform(-1, 1), 1)
+         self.health = 1
+ 
+@@ -62,7 +62,7 @@ class Bullet (Circle):
+         self.angular_velocity = 0
+         self.radius = 1
+         self.linewidth = 1
+-        self.accelerate(8)
++        self.accelerate(1)
+         self.ttl = born
+ 
+ 
+diff --git a/current/point.py b/current/point.py
+index 380983c..8524195 100644
+--- a/current/point.py
++++ b/current/point.py
+@@ -20,4 +20,5 @@ class Point:
+     def distanceFromOrigin(self):
+         return math.sqrt( self.x**2 + self.y**2 )
+ 
+-
++    def copy(self):
++        return Point( self.x, self.y)
+diff --git a/current/shape.py b/current/shape.py
+index a748f9d..dc4739b 100644
+--- a/current/shape.py
++++ b/current/shape.py
+@@ -15,7 +15,7 @@ class Shape(ABC):
+     def draw(self, screen):
+         pass
+ 
+-    def update(self, width, height):
++    def update(self, width, height, dt):
+         """
+         Update the position and orientation of the shape
+         :param width: screen width to confine the shape to
+@@ -25,8 +25,9 @@ class Shape(ABC):
+         # Update the position and orientation of the shape
+         #  position is modified by "pull" - how much it should move each frame
+         #  rotation is modified by "angular_velocity" - how much it should rotate each frame
+-        self.position += self.pull
+-        self.rotation += self.angular_velocity
++        self.position.y += self.pull.y * dt
++        self.position.x += self.pull.x * dt
++        self.rotation += self.angular_velocity * dt
+         # Use modulus to ensure that the object never vanishes from the screen
+         #  Position is wrapped to always be between  (0,0)  and  (width,height)
+         #  Rotation is wrapped to always be between 0 and 360 degrees
+@@ -45,8 +46,8 @@ class Shape(ABC):
+             self.pull.x *=0.9
+             self.pull.y *=0.9
+         else:
+-            self.pull.x += (acceleration * math.cos(math.radians(self.rotation)))
+-            self.pull.y += (acceleration * math.sin(math.radians(self.rotation)))
++            self.pull.x += (acceleration * math.cos(math.radians(self.rotation))) * 0.2
++            self.pull.y += (acceleration * math.sin(math.radians(self.rotation))) * 0.2
+ 
+     def rotate(self, degrees):
+         """

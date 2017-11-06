@@ -16,7 +16,7 @@ class Game( ABC ):
 
         # Running game state
         self.running = True
-
+        self.clock = pygame.time.Clock()
         # Keep track of how many times we have drawn a frame in the game:
         self.frame = 0
 
@@ -38,6 +38,8 @@ class Game( ABC ):
                 if event.type == pygame.QUIT:
                     self.running = False
 
+
+            self.dt = self.clock.tick(60)
             self.handle_input()
             self.update_simulation()
             self.paint()

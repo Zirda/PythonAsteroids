@@ -40,8 +40,8 @@ class Asteroid (Polygon):
         # Small asteroid: [Point(0,10), Point(10,15), Point(18,9), Point(13,3), Point(17,-5), Point(5,-12), Point(-10,-12), Point(-16,-7), Point(-16,8), Point(-9,14)]
         self.position = Point(x,y)
         self.rotation = random.randrange(0, 359, 15)
-        self.pull = Point(round(random.uniform(-1, 1),1),round(random.uniform(-1, 1),1))
-        self.angular_velocity = round(random.uniform(-1, 1),1)
+        self.pull = Point(round(random.uniform(-0.1, 0.1),1),round(random.uniform(-0.1, 0.1),1))
+        self.angular_velocity = round(random.uniform(-0.3, 0.3),1)
         self.health = 2
 
 
@@ -50,7 +50,7 @@ class Debris (Asteroid):
         self.points = getRandomDebris()
         self.position = position
         self.rotation = random.randrange(0, 359, 15)
-        self.pull = Point(round(random.uniform(-1, 1), 1), round(random.uniform(-1, 1), 1))
+        self.pull = Point(round(random.uniform(-0.1, 0.1), 1), round(random.uniform(-0.1, 0.1), 1))
         self.angular_velocity = round(random.uniform(-1, 1), 1)
         self.health = 1
 
@@ -62,7 +62,7 @@ class Bullet (Circle):
         self.angular_velocity = 0
         self.radius = 1
         self.linewidth = 1
-        self.accelerate(8)
+        self.accelerate(1)
         self.ttl = born
 
 
