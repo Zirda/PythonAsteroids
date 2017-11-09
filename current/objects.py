@@ -30,6 +30,16 @@ class Ship (Polygon):
         self.rotation = 0
         self.pull = Point(0,0)
         self.angular_velocity = 0.0
+        self.jumpProtection = False
+        self.lives = 3
+        self.spawnProtection = False
+        self.spawnProtectionTime = 0
+        self.spawnProtectionDuration = 3
+        self.jump_delay = 2
+        self.jump_timer = 0
+        self.jumpProtectionDuration = 0.25
+        self.shot_delay = 0.3
+        self.shot_timer = 0
 
         # super().__init__(self)
 
@@ -51,19 +61,19 @@ class Debris (Asteroid):
         self.position = position
         self.rotation = random.randrange(0, 359, 15)
         self.pull = Point(round(random.uniform(-0.1, 0.1), 1), round(random.uniform(-0.1, 0.1), 1))
-        self.angular_velocity = round(random.uniform(-1, 1), 1)
+        self.angular_velocity = round(random.uniform(-0.3, 0.3), 1)
         self.health = 1
 
 class Bullet (Circle):
-    def __init__(self,position, rotation, born):
+    def __init__(self,position, rotation, time):
         self.position = position
         self.rotation = rotation
         self.pull = Point(0,0)
         self.angular_velocity = 0
         self.radius = 1
         self.linewidth = 1
-        self.accelerate(1)
-        self.ttl = born
+        self.accelerate(2)
+        self.time = time
 
 
 class Star (Circle):

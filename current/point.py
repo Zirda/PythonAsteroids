@@ -20,5 +20,5 @@ class Point:
     def distanceFromOrigin(self):
         return math.sqrt( self.x**2 + self.y**2 )
 
-    def copy(self):
+    def copy(self):                     #Function to copy positional values, to prevent pointer errors
         return Point( self.x, self.y)

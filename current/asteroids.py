@@ -17,6 +17,8 @@ class Asteroids(Game):
 
     def __init__(self, name, width, height):
         super().__init__( name, width, height )
+        self.width = width
+        self.height = height
         self.ship = Ship()  # Creates a ship
         self.asteroids=[]   # A list of all asteroids
         for i in range(5):                  # Change for different amount of Asteroids
@@ -26,37 +28,36 @@ class Asteroids(Game):
             self.stars.append(Star())
         self.bullets = []   # A list of all bullets
         self.score = 0 # Possible score variable
-        self.shot_delay = 0.2
-        self.last_shot = 0
+
 
     def handle_input(self):
         super().handle_input()
         pygame.key.set_repeat(0, 100)
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[K_LEFT] and self.ship:
-            self.ship.rotate(-2)
+            self.ship.rotate(-3)
         if keys_pressed[K_RIGHT] and self.ship:
-            self.ship.rotate(2)
+            self.ship.rotate(3)
         if keys_pressed[K_UP] and self.ship:
             self.ship.accelerate(0.05)
         if keys_pressed[K_DOWN] and self.ship:
             self.ship.accelerate(0) #TODO: Set to (0) to stop the ship instantly with down-key AKA EASYMODE.
         if keys_pressed[K_SPACE] and self.ship:
-            if time.time() - self.last_shot > self.shot_delay:
-                self.last_shot = time.time()
-                if len(self.bullets) >= 15:
+            if time.time() - self.ship.shot_timer > self.ship.shot_delay:      #Limits the rate of fire. Cannot fire more often than shot_delay value
+                self.ship.shot_timer = time.time()                        #if it shoots, saves last fired timestamp
+                self.ship.spawnProtection = False                   #removes Spawn protection if bullet is fired
+                if len(self.bullets) >= 15:                         #Does not allow more than 15 bullets in total. deletes the oldest if more than 15.
                     del self.bullets[0]
-                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.frame))
+                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))      #Spawns a bullet with ships location. rotation and timestamp when fired.
                 else:
-                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.frame))
-        """         if len(self.bullets) == 0:
-                    self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
-                else:
-                    if self.bullets[len(self.bullets)-1].ttl > 50:
-                        self.bullets.append(Bullet(self.ship.position, self.ship.rotation, self.frame))
-    
-                # Försöker få delay i bullet interval
-                 """
+                    self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))
+        if keys_pressed[K_f] and self.ship:
+            self.asteroids.append(Asteroid(random.randrange(0, self.width, 5), random.randrange(0, self.height, 5)))        #Command for spawning more asteroids
+        if keys_pressed[K_t] and self.ship:
+            if time.time() - self.ship.jump_timer > self.ship.jump_delay:           #Checks if jumpdrive is on cooldown
+                self.ship.jump_timer = time.time()        #Saves timestamp for jump
+                self.ship.jumpDrive()                        #Jumps the ship
+
 
 
 
@@ -65,6 +66,7 @@ class Asteroids(Game):
         update_simulation() causes all objects in the game to update themselves
         """
         super().update_simulation()
+        currentTime = time.time()           #Saves current timestamp for the update
 
         if self.ship:
             self.ship.update( self.width, self.height, self.dt )
@@ -74,8 +76,12 @@ class Asteroids(Game):
             star.update( self.width, self.height, self.dt )
         for bullet in self.bullets:
             bullet.update( self.width, self.height, self.dt )
-            if bullet.ttl + 300 < self.frame:
+            if bullet.time + 2 < currentTime:                       #Deletes bullets that is older than 2 seconds
                 self.bullets.pop(self.bullets.index(bullet))
+        if self.ship.jump_timer + self.ship.jumpProtectionDuration < currentTime:           #Checks if jump protection is still active. if not, remove it
+            self.ship.jumpProtection = False
+        if self.ship.spawnProtectionTime + self.ship.spawnProtectionDuration < currentTime:
+            self.ship.spawnProtection = False                                                   #Checks if spawn protection is still active. if not, remove it
         self.handle_collisions()
 
     def render_objects(self):
@@ -100,8 +106,14 @@ class Asteroids(Game):
     def handle_collisions(self):
         if self.ship:
             for asteroid in self.asteroids:
-                if asteroid.collide(self.ship):
-                    self.death_screen()
+                if asteroid.collide(self.ship) and self.ship.spawnProtection == False and self.ship.jumpProtection == False:        #Checks if player is protected when colliding
+                    self.ship.lives =- 1                #NOT WORKING YET, Player has 3 lives. Plan is to do remove a life and gain 2-3 seconds immunity when losing a life.
+                    if self.ship.lives < 0:             #If no more lives yet, > player dead
+                        self.death_screen()
+                    elif self.ship.lives > 1:
+                        self.ship.spawnProtection = True
+                        self.ship.spawnProtectionTime = time.time()
+
                 for bullet in self.bullets:
                     if asteroid.contains(bullet.position):
                         self.score += 10
@@ -112,10 +124,12 @@ class Asteroids(Game):
                             self.asteroids.append(Debris(asteroid.position.copy()))
                             self.asteroids.append(Debris(asteroid.position.copy()))
                             self.asteroids.append(Debris(asteroid.position.copy()))
+               #if asteroid.collide(self.asteroids):
+
 
     def death_screen(self):
-        game = Asteroids("Asteroids", 640, 480)
-        label = self.myfont.render("Bitch Please!", 1, (8, 8, 8))
+        game = Asteroids("Asteroids", 1280, 720)
+        label = self.myfont.render("Lives:"+str(self.ship.lives), 1, (255, 255, 255))
         label2 = self.myfont.render("You Died!", 1, (255, 255, 255))
         score = self.smallfont.render("Score:" + str(self.score), 1, (255, 255, 255))
         self.screen.blit(label, (self.width * 0.30, self.height * 0.35))
@@ -124,6 +138,10 @@ class Asteroids(Game):
         pygame.display.update()
         pygame.time.wait(2000)
         pygame.time.wait(500)
+        for asteroids in self.asteroids:
+            self.asteroids.pop(self.asteroids.index(asteroids))
+        for bullet in self.bullets:
+            self.bullets.pop(self.bullets.index(bullet))
         game.runGame()
 
 
