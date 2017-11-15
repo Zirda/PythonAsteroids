@@ -37,38 +37,46 @@ class Asteroids(Game):
 
         self.ship.spawnProtection = True            #Sets up the player for first spawn when the game starts
         self.ship.spawnProtectionTime = time.time()
+        self.activeInput = []
 
     def handle_input(self):
-        self.rotateCheck = False        #Resets the counter if the model has updated the rotation this call
         super().handle_input()
-        for x in range(self.sniffer.inputList):
-            if self.sniffer.inputList[x] in self.rotationRange and self.currentRotation != self.sniffer.inputList[x]:   #Checks if it is a rotation input and isn't the current rotation
-                self.ship.adjustedRotation(self.sniffer.inputList[x])       #Updates rotation
-                self.currentRotation = self.sniffer.inputList[x]            #Saves new rotation as current
-                self.rotateCheck = True                                     #Saves that the ship has rotated with a new value this update
-            if self.sniffer.inputList[x] == 1000 and self.ship:
-                self.ship.MovingForward = True                          #Since RF refresh rate is lower we need to save moving forward as a boolian and send start/stop
-            if self.sniffer.inputList[x] == 2000 and self.ship:
-                self.ship.MovingForward = False
-            if self.sniffer.inputList[x] == 3000 and self.ship:
-                self.ship.MovingForward = False                         #Stop function, Safety catch to set moving forward as false if RF signals are lost
-                self.ship.accelerate(0)
-            if self.sniffer.inputList[x] == 4000 and self.ship:
-                if time.time() - self.ship.shot_timer > self.ship.shot_delay:  # Limits the rate of fire. Cannot fire more often than shot_delay value
-                    self.ship.shot_timer = time.time()  # if it shoots, saves last fired timestamp
-                    self.ship.spawnProtection = False  # removes Spawn protection if bullet is fired
-                    if len(self.bullets) >= 15:  # Does not allow more than 15 bullets in total. deletes the oldest if more than 15.
-                        del self.bullets[0]
-                        self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))  # Spawns a bullet with ships location. rotation and timestamp when fired.
-                    else:
-                        self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))
+        self.rotateCheck = False        #Resets the counter if the model has updated the rotation this call
 
-            if self.sniffer.inputList[x] == 5000 and self.ship:
-                if time.time() - self.ship.jump_timer > self.ship.jump_delay:  # Checks if jumpdrive is on cooldown
-                    self.ship.jump_timer = time.time()  # Saves timestamp for jump
-                    self.ship.jumpDrive()  # Jumps the ship
+        if (self.sniffer.isLocked != True):
+            self.sniffer.isLocked = True
+            self.activeInput = self.sniffer.inputList
+            self.sniffer.isLocked = False
 
-            self.sniffer.inputList.pop(self.sniffer.inputList.index(x))     #Removes current command from the list
+            if (len(self.activeInput) > 0):
+                for x in range(self.activeInput):
+                    if self.activeInput[x] in self.rotationRange and self.currentRotation != self.activeInput[x]:   #Checks if it is a rotation input and isn't the current rotation
+                        self.ship.adjustedRotation(self.activeInput[x])       #Updates rotation
+                        self.currentRotation = self.activeInput[x]            #Saves new rotation as current
+                        self.rotateCheck = True                                     #Saves that the ship has rotated with a new value this update
+                    if self.activeInput[x] == 1000 and self.ship:
+                        self.ship.MovingForward = True                          #Since RF refresh rate is lower we need to save moving forward as a boolian and send start/stop
+                    if self.activeInput[x] == 2000 and self.ship:
+                        self.ship.MovingForward = False
+                    if self.activeInput[x] == 3000 and self.ship:
+                        self.ship.MovingForward = False                         #Stop function, Safety catch to set moving forward as false if RF signals are lost
+                        self.ship.accelerate(0)
+                    if self.activeInput[x] == 4000 and self.ship:
+                        if time.time() - self.ship.shot_timer > self.ship.shot_delay:  # Limits the rate of fire. Cannot fire more often than shot_delay value
+                            self.ship.shot_timer = time.time()  # if it shoots, saves last fired timestamp
+                            self.ship.spawnProtection = False  # removes Spawn protection if bullet is fired
+                            if len(self.bullets) >= 15:  # Does not allow more than 15 bullets in total. deletes the oldest if more than 15.
+                                del self.bullets[0]
+                                self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))  # Spawns a bullet with ships location. rotation and timestamp when fired.
+                            else:
+                                self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))
+
+                    if self.activeInput[x] == 5000 and self.ship:
+                        if time.time() - self.ship.jump_timer > self.ship.jump_delay:  # Checks if jumpdrive is on cooldown
+                            self.ship.jump_timer = time.time()  # Saves timestamp for jump
+                            self.ship.jumpDrive()  # Jumps the ship
+
+                    self.activeInput.pop(self.activeInput.index(x))     #Removes current command from the list
 
 
         #These two are outside the loop around the command list, so if there is multiple conflicting commands only one will act during one single update.
@@ -80,8 +88,6 @@ class Asteroids(Game):
         #if keys_pressed[K_f] and self.ship:
          #   self.asteroids.append(Asteroid(random.randrange(0, self.width, 5), random.randrange(0, self.height, 5)))        #Command for spawning more asteroids
         #if keys_pressed[K_t] and self.ship:
-
-
 
 
     def update_simulation(self):
