@@ -15,7 +15,7 @@ class Shape(ABC):
     def draw(self, screen):
         pass
 
-    def update(self, width, height, dt):
+    def update(self, width, height):
         """
         Update the position and orientation of the shape
         :param width: screen width to confine the shape to
@@ -25,9 +25,8 @@ class Shape(ABC):
         # Update the position and orientation of the shape
         #  position is modified by "pull" - how much it should move each frame
         #  rotation is modified by "angular_velocity" - how much it should rotate each frame
-        self.position.y += self.pull.y * dt             #position needed to be split to multiply it with deltatime
-        self.position.x += self.pull.x * dt
-        self.rotation += self.angular_velocity * dt
+        self.position += self.pull
+        self.rotation += self.angular_velocity
         # Use modulus to ensure that the object never vanishes from the screen
         #  Position is wrapped to always be between  (0,0)  and  (width,height)
         #  Rotation is wrapped to always be between 0 and 360 degrees
@@ -46,8 +45,8 @@ class Shape(ABC):
             self.pull.x *=0.9
             self.pull.y *=0.9
         else:
-            self.pull.x += (acceleration * math.cos(math.radians(self.rotation))) * 0.2         #modified acceleration value due to change to deltatime
-            self.pull.y += (acceleration * math.sin(math.radians(self.rotation))) * 0.2
+            self.pull.x += (acceleration * math.cos(math.radians(self.rotation)))
+            self.pull.y += (acceleration * math.sin(math.radians(self.rotation)))
 
     def rotate(self, degrees):
         """
@@ -66,28 +65,3 @@ class Shape(ABC):
         """
         return False
 
-    def jumpDrive(self):
-        #jump forwards 1/4 of the screen
-        self.jumpProtection = True              #Protects the user while jumping to pass through asteroids
-        Amplitude = 150                         #Length of the jump
-        xPos = (math.cos(math.radians(self.rotation))) * Amplitude      #calculates the landing position based on ship rotation
-        yPos = (math.sin(math.radians(self.rotation))) * Amplitude
-
-        self.position.x += xPos     #Applies the jump length on current location
-        self.position.y += yPos
-
-    def adjustedRotation(self, radioValue):             #Function for handling RF input into ship rotation
-        if radioValue == 10000:
-            self.rotate(-3)
-        elif radioValue == 11000:
-            self.rotate(-2)
-        elif radioValue == 12000:
-            self.rotate(-1)
-        elif radioValue == 13000:
-            self.rotate(0)
-        elif radioValue == 14000:
-            self.rotate(1)
-        elif radioValue == 15000:
-            self.rotate(2)
-        elif radioValue == 16000:
-            self.rotate(3)

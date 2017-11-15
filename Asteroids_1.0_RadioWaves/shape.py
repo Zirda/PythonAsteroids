@@ -76,18 +76,18 @@ class Shape(ABC):
         self.position.x += xPos     #Applies the jump length on current location
         self.position.y += yPos
 
-    def adjustedRotation(self, radioValue):             #Function for handling RF input into ship rotation
-        if radioValue == 10000:
-            self.rotate(-3)
-        elif radioValue == 11000:
-            self.rotate(-2)
-        elif radioValue == 12000:
-            self.rotate(-1)
-        elif radioValue == 13000:
-            self.rotate(0)
-        elif radioValue == 14000:
-            self.rotate(1)
-        elif radioValue == 15000:
-            self.rotate(2)
-        elif radioValue == 16000:
-            self.rotate(3)
+    def adjustedRotation(self, radioValue):
+        if radioValue == 10000 and self.ship:
+            self.ship.rotate(-3)
+        elif radioValue == 11000 and self.ship:
+            self.ship.rotate(-2)
+        elif radioValue == 12000 and self.ship:
+            self.ship.rotate(-1)
+        elif radioValue == 13000 and self.ship:
+            self.ship.rotate(0)
+        elif radioValue == 14000 and self.ship:
+            self.ship.rotate(1)
+        elif radioValue == 15000 and self.ship:
+            self.ship.rotate(2)
+        elif radioValue == 16000 and self.ship:
+            self.ship.rotate(3)

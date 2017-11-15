@@ -26,22 +26,22 @@ def getRandomDebris():
 class Ship (Polygon):
     def __init__(self, width, height):
         self.points = [Point(0, 0), Point(0, 5), Point(-10, 10), Point(15, 0), Point(-10, -10), Point(0, -5)]
-        self.position = Point(width//2,height//2)
+        self.position = Point(width/2,height/2)
         self.rotation = 0
         self.pull = Point(0,0)
         self.angular_velocity = 0.0
         self.jumpProtection = False
+        self.lives = 3
         self.spawnProtection = False
         self.spawnProtectionTime = 0
-        self.spawnProtectionDuration = 1.5
+        self.spawnProtectionDuration = 3
         self.jump_delay = 2
         self.jump_timer = 0
         self.jumpProtectionDuration = 0.25
         self.shot_delay = 0.3
         self.shot_timer = 0
-        self.MovingForward = False
 
-        # super().__init__(self, width, height)
+        # super().__init__(self)
 
 class Asteroid (Polygon):
     def __init__(self, x,y):

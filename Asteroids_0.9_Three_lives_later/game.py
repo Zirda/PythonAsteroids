@@ -2,8 +2,7 @@ import sys
 import pygame
 import time
 from pygame.locals import *
-from threading import Thread
-from radiocoms import inputScanner
+
 
 from abc import ABC, abstractmethod
 
@@ -12,7 +11,6 @@ class Game( ABC ):
     Game is an abstract base class to manage basic game concepts
     """
     def __init__(self, name, width, height):
-        #super().__init__()
         self.name = name
         self.width = width
         self.height = height
@@ -32,35 +30,23 @@ class Game( ABC ):
         self.screen = pygame.display.set_mode([width,height])
         self.myfont = pygame.font.SysFont("arial", 45)
         self.smallfont = pygame.font.SysFont("arial", 20)
-
-        self.sniffer = inputScanner()
-        snifferThread = Thread(target=self.sniffer.run())   #Creates a separate thread for the RF scanner
-        snifferThread.start()                                   #Starts the thread
-
-
     def runGame(self):
-        #self.ship.spawnProtection = True            #Sets up the player for first spawn when the game starts
-        #self.ship.spawnProtectionTime = time.time()
+        self.ship.spawnProtection = True            #Sets up the player for first spawn when the game starts
+        self.ship.spawnProtectionTime = time.time()
         #self.ship.lives = 3
         # Our "infinite" loop for the game logic and drawing
         while self.running:
             # WARNING: the following code is very important, if we don't loop
             # through all the events then the game window will never be drawn!
-            print("A")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.sniffer.terminate()        #Kills the input scanner thread
                     self.running = False
 
-            print("B")
+
             self.dt = self.clock.tick(60)
-            print("C")
             self.handle_input()
-            print("D")
             self.update_simulation()
-            print("E")
             self.paint()
-            print("F")
         pygame.quit()
 
     def paint(self):

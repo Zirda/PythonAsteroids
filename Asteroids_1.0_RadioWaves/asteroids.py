@@ -31,27 +31,24 @@ class Asteroids(Game):
         self.score = score # Possible score variable
         self.lives = lives
 
-        self.currentRotation = 0            #Saves current location as RF value to reduce the amount of data sent
-        self.rotationRange = (10000, 11000, 12000, 13000, 14000, 15000, 16000)  #All possible rotationvalues, Used to check if input is rotation or not
+        self.currentRotation = 0
+        self.rotationRange = (10000, 11000, 12000, 13000, 14000, 15000, 16000)
         self.rotateCheck = False
 
-        self.ship.spawnProtection = True            #Sets up the player for first spawn when the game starts
-        self.ship.spawnProtectionTime = time.time()
-
     def handle_input(self):
-        self.rotateCheck = False        #Resets the counter if the model has updated the rotation this call
+        self.rotateCheck = False
         super().handle_input()
         for x in range(self.sniffer.inputList):
-            if self.sniffer.inputList[x] in self.rotationRange and self.currentRotation != self.sniffer.inputList[x]:   #Checks if it is a rotation input and isn't the current rotation
-                self.ship.adjustedRotation(self.sniffer.inputList[x])       #Updates rotation
-                self.currentRotation = self.sniffer.inputList[x]            #Saves new rotation as current
-                self.rotateCheck = True                                     #Saves that the ship has rotated with a new value this update
+            if self.sniffer.inputList[x] in self.rotationRange and self.currentRotation != self.sniffer.inputList[x]:
+                self.ship.adjustedRotation(self.sniffer.inputList[x])
+                self.currentRotation = self.sniffer.inputList[x]
+                self.rotateCheck = True
             if self.sniffer.inputList[x] == 1000 and self.ship:
-                self.ship.MovingForward = True                          #Since RF refresh rate is lower we need to save moving forward as a boolian and send start/stop
+                self.ship.MovingForward = True
             if self.sniffer.inputList[x] == 2000 and self.ship:
                 self.ship.MovingForward = False
             if self.sniffer.inputList[x] == 3000 and self.ship:
-                self.ship.MovingForward = False                         #Stop function, Safety catch to set moving forward as false if RF signals are lost
+                self.ship.MovingForward = False
                 self.ship.accelerate(0)
             if self.sniffer.inputList[x] == 4000 and self.ship:
                 if time.time() - self.ship.shot_timer > self.ship.shot_delay:  # Limits the rate of fire. Cannot fire more often than shot_delay value
@@ -68,13 +65,11 @@ class Asteroids(Game):
                     self.ship.jump_timer = time.time()  # Saves timestamp for jump
                     self.ship.jumpDrive()  # Jumps the ship
 
-            self.sniffer.inputList.pop(self.sniffer.inputList.index(x))     #Removes current command from the list
+            self.sniffer.inputList.pop(self.sniffer.inputList.index(x))
 
-
-        #These two are outside the loop around the command list, so if there is multiple conflicting commands only one will act during one single update.
-        if self.rotateCheck == False:                               #If the ship has not received a new rotation command, use the previous one
+        if self.rotateCheck == False:
             self.ship.adjustedRotation(self.currentRotation)
-        if self.ship.MovingForward == True:                        #If the ship is commanded to move forward, move it.
+        if self.ship.MovingForward == True:
             self.ship.accelerate(0.05)
 
         #if keys_pressed[K_f] and self.ship:
@@ -169,7 +164,7 @@ class Asteroids(Game):
         game.runGame()
 
     def game_over(self):
-        game = Asteroids("Asteroids", self.width, self.height, 3, 0)
+        game = Asteroids("Asteroids", self.width, self.height, 3,0)
         label2 = self.myfont.render("GAME OVER!", 1, (255, 255, 255))
         score = self.smallfont.render("Score:" + str(self.score), 1, (255, 255, 255))
         self.screen.blit(label2, (self.width * 0.35, self.height * 0.40))
