@@ -1,6 +1,7 @@
 import sys
 import pygame
 import time
+from objects import Ship
 from pygame.locals import *
 from threading import Thread
 from radiocoms import inputScanner
@@ -32,11 +33,9 @@ class Game( ABC ):
         self.screen = pygame.display.set_mode([width,height])
         self.myfont = pygame.font.SysFont("arial", 45)
         self.smallfont = pygame.font.SysFont("arial", 20)
-
         self.sniffer = inputScanner()
-        snifferThread = Thread(target=self.sniffer.run)   #Creates a separate thread for the RF scanner
-        snifferThread.start()                                   #Starts the thread
-
+        snifferThread = Thread(target=self.sniffer.run)  # Creates a separate thread for the RF scanner
+        snifferThread.start()  # Starts the thread
 
     def runGame(self):
         #self.ship.spawnProtection = True            #Sets up the player for first spawn when the game starts
@@ -46,21 +45,14 @@ class Game( ABC ):
         while self.running:
             # WARNING: the following code is very important, if we don't loop
             # through all the events then the game window will never be drawn!
-            print("A")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.sniffer.terminate()        #Kills the input scanner thread
                     self.running = False
 
-            print("B")
-            self.dt = self.clock.tick(60)
-            print("C")
+            self.dt = self.clock.tick(10)
             self.handle_input()
-            print("D")
             self.update_simulation()
-            print("E")
             self.paint()
-            print("F")
         pygame.quit()
 
     def paint(self):

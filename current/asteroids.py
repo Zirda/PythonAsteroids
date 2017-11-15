@@ -22,10 +22,10 @@ class Asteroids(Game):
         self.height = height
         self.ship = Ship(width, height)  # Creates a ship
         self.asteroids=[]   # A list of all asteroids
-        for i in range(5):                  # Change for different amount of Asteroids
+        for i in range(2):                  # Change for different amount of Asteroids
             self.asteroids.append(Asteroid(random.randrange(0, width, 5),random.randrange(0, height, 5)))
         self.stars=[]       # A list of all background stars
-        for i in range(25):                # Change for different amount of background Stars
+        for i in range(5):                # Change for different amount of background Stars
             self.stars.append(Star())
         self.bullets = []   # A list of all bullets
         self.score = score # Possible score variable
@@ -100,6 +100,8 @@ class Asteroids(Game):
             self.ship.update( self.width, self.height, self.dt )
         for asteroid in self.asteroids:
             asteroid.update( self.width, self.height, self.dt )
+        if (len(self.asteroids) < 2):
+            self.asteroids.append(Asteroid(random.randrange(0, self.width, 5), random.randrange(0, self.height, 5)))
         for star in self.stars:
             star.update( self.width, self.height, self.dt )
         for bullet in self.bullets:
@@ -157,6 +159,7 @@ class Asteroids(Game):
 
 
     def death_screen(self):
+        self.sniffer.terminate()
         game = Asteroids("Asteroids", self.width, self.height, self.lives, self.score)
         label = self.myfont.render("Lives:"+str(self.lives), 1, (255, 255, 255))
         label2 = self.myfont.render("You Died!", 1, (255, 255, 255))
@@ -176,6 +179,7 @@ class Asteroids(Game):
         game.runGame()
 
     def game_over(self):
+        self.sniffer.terminate()
         game = Asteroids("Asteroids", self.width, self.height, 3, 0)
         label2 = self.myfont.render("GAME OVER!", 1, (255, 255, 255))
         score = self.smallfont.render("Score:" + str(self.score), 1, (255, 255, 255))
