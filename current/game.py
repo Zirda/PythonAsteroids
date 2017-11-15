@@ -34,7 +34,7 @@ class Game( ABC ):
         self.smallfont = pygame.font.SysFont("arial", 20)
 
         self.sniffer = inputScanner()
-        snifferThread = Thread(target=self.sniffer.run())   #Creates a separate thread for the RF scanner
+        snifferThread = Thread(target=self.sniffer.run)   #Creates a separate thread for the RF scanner
         snifferThread.start()                                   #Starts the thread
 
 

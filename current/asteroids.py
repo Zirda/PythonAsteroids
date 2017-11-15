@@ -49,7 +49,8 @@ class Asteroids(Game):
             self.sniffer.isLocked = False
 
             if (len(self.activeInput) > 0):
-                for x in range(self.activeInput):
+                while (len(self.activeInput) > 0):
+                    x = 0
                     if self.activeInput[x] in self.rotationRange and self.currentRotation != self.activeInput[x]:   #Checks if it is a rotation input and isn't the current rotation
                         self.ship.adjustedRotation(self.activeInput[x])       #Updates rotation
                         self.currentRotation = self.activeInput[x]            #Saves new rotation as current
