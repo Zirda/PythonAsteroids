@@ -48,36 +48,36 @@ class Asteroids(Game):
             self.activeInput = self.sniffer.inputList
             self.sniffer.isLocked = False
 
-            if (len(self.activeInput) > 0):
-                while (len(self.activeInput) > 0):
-                    x = 0
-                    if self.activeInput[x] in self.rotationRange and self.currentRotation != self.activeInput[x]:   #Checks if it is a rotation input and isn't the current rotation
-                        self.ship.adjustedRotation(self.activeInput[x])       #Updates rotation
-                        self.currentRotation = self.activeInput[x]            #Saves new rotation as current
-                        self.rotateCheck = True                                     #Saves that the ship has rotated with a new value this update
-                    if self.activeInput[x] == 1000 and self.ship:
-                        self.ship.MovingForward = True                          #Since RF refresh rate is lower we need to save moving forward as a boolian and send start/stop
-                    if self.activeInput[x] == 2000 and self.ship:
-                        self.ship.MovingForward = False
-                    if self.activeInput[x] == 3000 and self.ship:
-                        self.ship.MovingForward = False                         #Stop function, Safety catch to set moving forward as false if RF signals are lost
-                        self.ship.accelerate(0)
-                    if self.activeInput[x] == 4000 and self.ship:
-                        if time.time() - self.ship.shot_timer > self.ship.shot_delay:  # Limits the rate of fire. Cannot fire more often than shot_delay value
-                            self.ship.shot_timer = time.time()  # if it shoots, saves last fired timestamp
-                            self.ship.spawnProtection = False  # removes Spawn protection if bullet is fired
-                            if len(self.bullets) >= 15:  # Does not allow more than 15 bullets in total. deletes the oldest if more than 15.
-                                del self.bullets[0]
-                                self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))  # Spawns a bullet with ships location. rotation and timestamp when fired.
-                            else:
-                                self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))
+        if (len(self.activeInput) > 0):
+            while (len(self.activeInput) > 0):
+                x = 0
+                if self.activeInput[x] in self.rotationRange and self.currentRotation != self.activeInput[x]:   #Checks if it is a rotation input and isn't the current rotation
+                    self.ship.adjustedRotation(self.activeInput[x])       #Updates rotation
+                    self.currentRotation = self.activeInput[x]            #Saves new rotation as current
+                    self.rotateCheck = True                                     #Saves that the ship has rotated with a new value this update
+                if self.activeInput[x] == 1000 and self.ship:
+                    self.ship.MovingForward = True                          #Since RF refresh rate is lower we need to save moving forward as a boolian and send start/stop
+                if self.activeInput[x] == 2000 and self.ship:
+                    self.ship.MovingForward = False
+                if self.activeInput[x] == 3000 and self.ship:
+                    self.ship.MovingForward = False                         #Stop function, Safety catch to set moving forward as false if RF signals are lost
+                    self.ship.accelerate(0)
+                if self.activeInput[x] == 4000 and self.ship:
+                    if time.time() - self.ship.shot_timer > self.ship.shot_delay:  # Limits the rate of fire. Cannot fire more often than shot_delay value
+                        self.ship.shot_timer = time.time()  # if it shoots, saves last fired timestamp
+                        self.ship.spawnProtection = False  # removes Spawn protection if bullet is fired
+                        if len(self.bullets) >= 15:  # Does not allow more than 15 bullets in total. deletes the oldest if more than 15.
+                            del self.bullets[0]
+                            self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))  # Spawns a bullet with ships location. rotation and timestamp when fired.
+                        else:
+                            self.bullets.append(Bullet(self.ship.position.copy(), self.ship.rotation, self.ship.shot_timer))
 
-                    if self.activeInput[x] == 5000 and self.ship:
-                        if time.time() - self.ship.jump_timer > self.ship.jump_delay:  # Checks if jumpdrive is on cooldown
-                            self.ship.jump_timer = time.time()  # Saves timestamp for jump
-                            self.ship.jumpDrive()  # Jumps the ship
+                if self.activeInput[x] == 5000 and self.ship:
+                    if time.time() - self.ship.jump_timer > self.ship.jump_delay:  # Checks if jumpdrive is on cooldown
+                        self.ship.jump_timer = time.time()  # Saves timestamp for jump
+                        self.ship.jumpDrive()  # Jumps the ship
 
-                    self.activeInput.pop(self.activeInput.index(x))     #Removes current command from the list
+                self.activeInput.pop(self.activeInput.index(x))     #Removes current command from the list
 
 
         #These two are outside the loop around the command list, so if there is multiple conflicting commands only one will act during one single update.
@@ -159,7 +159,7 @@ class Asteroids(Game):
 
 
     def death_screen(self):
-        self.sniffer.terminate()
+        self.sniffer.terminate()            #Terminates the sniffer, creates a new one on the next line
         game = Asteroids("Asteroids", self.width, self.height, self.lives, self.score)
         label = self.myfont.render("Lives:"+str(self.lives), 1, (255, 255, 255))
         label2 = self.myfont.render("You Died!", 1, (255, 255, 255))
@@ -174,8 +174,6 @@ class Asteroids(Game):
             self.asteroids.pop(self.asteroids.index(asteroids))
         for bullet in self.bullets:
             self.bullets.pop(self.bullets.index(bullet))
-        for x in self.sniffer.inputList:
-            self.sniffer.inputList.pop(self.sniffer.inputList.index(x))
         game.runGame()
 
     def game_over(self):
@@ -192,8 +190,6 @@ class Asteroids(Game):
             self.asteroids.pop(self.asteroids.index(asteroids))
         for bullet in self.bullets:
             self.bullets.pop(self.bullets.index(bullet))
-        for x in self.sniffer.inputList:
-            self.sniffer.inputList.pop(self.sniffer.inputList.index(x))
         game.runGame()
 
 
